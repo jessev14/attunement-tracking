@@ -36,9 +36,10 @@ Hooks.on('preUpdateItem', (item, diff, options, userID) => {
 
     const { value: currentActorAttunementValue, max: actorAttunementMax } = actor.system.attributes.attunement;
     const isNewlyAttuned = diff.system?.attunement === CONFIG.DND5E.attunementTypes.ATTUNED;
-    const attunementValue = diff.flags?.[moduleID]?.attunementValue ?? item.getFlag(moduleID, 'attunementValue');
+    const oldAttunementValue = item.getFlag(moduleID, 'attunementValue');
+    const attunementValue = diff.flags?.[moduleID]?.attunementValue ?? oldAttunementValue;
     if (isNewlyAttuned || moduleID in (diff.flags || {})) {
-        const newActorAttunementLevel = currentActorAttunementValue + attunementValue;
+        const newActorAttunementLevel = currentActorAttunementValue + attunementValue - (isNewlyAttuned ? 0 : oldAttunementValue);
         if (newActorAttunementLevel > actorAttunementMax) {
             ui.notifications.warn('Total attunement value exceeds maximum.');
             delete diff.system?.attunement;
