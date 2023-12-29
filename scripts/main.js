@@ -10,7 +10,8 @@ Hooks.once('init', () => {
 
 Hooks.on('renderItemSheet5e', (app, [html], appData) => {
     const item = app.object;
-    const attunementDiv = html.querySelector('select[name="system.attunement"]')?.closest('div.form-group');
+    let attunementDiv = html.querySelector('select[name="system.attunement"]')?.closest('div.form-group');
+    if (!attunementDiv) attunementDiv = html.querySelector('select[data-tidy-field="system.attunement"]').closest('div');
     if (!attunementDiv) return;
 
     const attunementInput = document.createElement('div');
@@ -22,7 +23,7 @@ Hooks.on('renderItemSheet5e', (app, [html], appData) => {
         </div>
     `;
 
-    attunementDiv.before(attunementInput);
+    attunementDiv.after(attunementInput);
 });
 
 Hooks.on('preUpdateItem', (item, diff, options, userID) => {
@@ -40,7 +41,10 @@ Hooks.on('preUpdateItem', (item, diff, options, userID) => {
     const attunementValue = diff.flags?.[moduleID]?.attunementValue ?? oldAttunementValue;
     if (isNewlyAttuned || moduleID in (diff.flags || {})) {
         const newActorAttunementLevel = currentActorAttunementValue + attunementValue - (isNewlyAttuned ? 0 : oldAttunementValue);
-        if (newActorAttunementLevel > actorAttunementMax) {
+        if (
+            (item.system.attunement === 2 || diff.system?.attunement === 2)
+            && (newActorAttunementLevel > actorAttunementMax)
+        ) {
             ui.notifications.warn('Total attunement value exceeds maximum.');
             delete diff.system?.attunement;
             delete diff.flags?.[moduleID];
