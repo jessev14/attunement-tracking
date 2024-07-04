@@ -4,7 +4,7 @@ const lg = x => console.log(x);
 
 
 Hooks.once('init', () => {
-    libWrapper.register(moduleID, 'CONFIG.Actor.documentClass.prototype._prepareCharacterData', new_prepareCharacterData, 'WRAPPER');
+    libWrapper.register(moduleID, 'CONFIG.Actor.documentClass.prototype.prepareData', new_prepareCharacterData, 'WRAPPER');
 });
 
 
@@ -30,25 +30,26 @@ Hooks.on('preUpdateItem', (item, diff, options, userID) => {
     const { actor } = item;
     if (!actor) return;
 
-    if (
-        !(moduleID in (diff.flags || {}))
-        && !('attunement' in (diff.system || {}))
-    ) return;
-
     const { value: currentActorAttunementValue, max: actorAttunementMax } = actor.system.attributes.attunement;
-    const isNewlyAttuned = diff.system?.attunement === CONFIG.DND5E.attunementTypes.ATTUNED;
-    const oldAttunementValue = item.getFlag(moduleID, 'attunementValue');
-    const attunementValue = diff.flags?.[moduleID]?.attunementValue ?? oldAttunementValue;
-    if (isNewlyAttuned || moduleID in (diff.flags || {})) {
-        const newActorAttunementLevel = currentActorAttunementValue + attunementValue - (isNewlyAttuned ? 0 : oldAttunementValue);
-        if (
-            (item.system.attunement === 2 || diff.system?.attunement === 2)
-            && (newActorAttunementLevel > actorAttunementMax)
-        ) {
+
+    const changeType = moduleID in (diff.flags || {}) ? 'attunementLevel' : 'attuned' in (diff.system || {}) ? 'attuned' : false;
+    if (!changeType) return;
+
+    if (changeType === 'attunementLevel') {
+        const isAttuned = item.system.attuned;
+        if (!isAttuned) return;
+
+        const newAttunementLevel = currentActorAttunementValue - item.getFlag(moduleID, 'attunementValue') + diff.flags[moduleID].attunementValue;
+        if (newAttunementLevel > actorAttunementMax) {
             ui.notifications.warn('Total attunement value exceeds maximum.');
-            delete diff.system?.attunement;
-            delete diff.flags?.[moduleID];
-            return;
+            return false;
+        }
+    } else if (diff.system.attuned) {
+        const itemAttunementValue = item.getFlag(moduleID, 'attunementValue') || 0;
+        const newattunementValue = currentActorAttunementValue + itemAttunementValue;
+        if (newattunementValue > actorAttunementMax) {
+            ui.notifications.warn('Total attunement value exceeds maximum.');
+            return false;
         }
     }
 });
@@ -58,9 +59,9 @@ function new_prepareCharacterData(wrapped) {
     wrapped();
 
     this.system.attributes.attunement.value = 0;
-    this.system.attributes.attunement.max = this.system.details.level;
+    this.system.attributes.attunement.max = this.system.details.level * 10;
     for (const item of this.items) {
-        if (item.system.attunement === CONFIG.DND5E.attunementTypes.ATTUNED) {
+        if (item.system.attuned) {
             this.system.attributes.attunement.value += item.getFlag(moduleID, 'attunementValue') ?? 0;
         }
     }
