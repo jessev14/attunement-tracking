@@ -17,9 +17,13 @@ Hooks.on('renderItemSheet5e', (app, [html], appData) => {
     const attunementInput = document.createElement('div');
     attunementInput.classList.add('form-group');
     attunementInput.innerHTML = `
-        <label>Attunement Level</label>
-        <div class="form-fields">
-            <input type="number" value="${item.getFlag(moduleID, 'attunementValue') || 0}" name="flags.${moduleID}.attunementValue" />
+
+
+        <div class="form-group label-top">
+            <label>Level</label>
+            <div class="form-fields">
+                <input type="number" value="${item.getFlag(moduleID, 'attunementValue') || 0}" name="flags.${moduleID}.attunementValue" />
+            </div>
         </div>
     `;
 
@@ -37,14 +41,16 @@ Hooks.on('preUpdateItem', (item, diff, options, userID) => {
 
     if (changeType === 'attunementLevel') {
         const isAttuned = item.system.attuned;
-        if (!isAttuned) return;
-
-        const newAttunementLevel = currentActorAttunementValue - item.getFlag(moduleID, 'attunementValue') + diff.flags[moduleID].attunementValue;
-        if (newAttunementLevel > actorAttunementMax) {
-            ui.notifications.warn('Total attunement value exceeds maximum.');
-            return false;
+        if (isAttuned) {
+            const newAttunementLevel = currentActorAttunementValue - item.getFlag(moduleID, 'attunementValue') + diff.flags[moduleID].attunementValue;
+            if (newAttunementLevel > actorAttunementMax) {
+                ui.notifications.warn('Total attunement value exceeds maximum.');
+                return false;
+            }
         }
-    } else if (diff.system.attuned) {
+    } 
+    
+    if (diff.system.attuned) {
         const itemAttunementValue = item.getFlag(moduleID, 'attunementValue') || 0;
         const newattunementValue = currentActorAttunementValue + itemAttunementValue;
         if (newattunementValue > actorAttunementMax) {
