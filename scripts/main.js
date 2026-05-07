@@ -29,14 +29,16 @@ Hooks.on("renderItemSheetV2", (sheet, element, data) => {
 
     attunementLevelFieldset.querySelector('div.form-group.label-top').remove();
     attunementLevelFieldset.querySelector('div.label-top label').innerText = '';
+    attunementLevelFieldset.querySelector('div.label-top label').dataset.fieldPath = `flags.${moduleID}.attunementLevel`;
 
     const input = attunementLevelFieldset.querySelector('input');
     input.type = 'number';
     input.classList.add('attunement-level');
-
-    lg(attunementLevelFieldset)
+    delete input.dataset.tidyField;
+    input.removeAttribute('id');
 
     usageFieldset.insertAdjacentHTML("afterend", attunementLevelFieldset.outerHTML);
+    element.querySelector('input.attunement-level').value = attunementLevel;
     element.querySelector('input.attunement-level').addEventListener('change', function () {
         item.setFlag(moduleID, 'attunementLevel', this.value)
     });
@@ -65,6 +67,7 @@ Hooks.on('renderItemSheet5e', (app, [html], appData) => {
 });
 
 Hooks.on('preUpdateItem', (item, diff, options, userID) => {
+    lg({ item, diff })
     const { actor } = item;
     if (!actor) return;
 
@@ -84,7 +87,7 @@ Hooks.on('preUpdateItem', (item, diff, options, userID) => {
         }
     }
 
-    if (diff.system.attuned) {
+    if (diff.system?.attuned) {
         const itemAttunementValue = item.getFlag(moduleID, 'attunementValue') || 0;
         const newattunementValue = currentActorAttunementValue + itemAttunementValue;
         if (newattunementValue > actorAttunementMax) {
