@@ -11,7 +11,7 @@ Hooks.once('init', () => {
 // Every time an actor renders, whether a full render or a partial
 Hooks.on("renderItemSheetV2", (sheet, element, data) => {
     const item = sheet.object;
-    const attunementLevel = item.getFlag(moduleID, 'attunementLevel')
+    const attunementValue = item.getFlag(moduleID, 'attunementValue')
     const isTidySheet = element.classList.contains('tidy5e-sheet');
 
     if (!isTidySheet) {
@@ -19,28 +19,28 @@ Hooks.on("renderItemSheetV2", (sheet, element, data) => {
     }
 
     const usageFieldset = element.querySelector("input[data-tidy-field='system.uses.spent']").closest('fieldset');
-    const attunementLevelFieldset = usageFieldset.cloneNode(true);
-    attunementLevelFieldset.dataset.tidyRenderScheme = 'handlebars';
-    attunementLevelFieldset.querySelector('legend').innerText = 'Attunement ';
+    const attunementValueFieldset = usageFieldset.cloneNode(true);
+    attunementValueFieldset.dataset.tidyRenderScheme = 'handlebars';
+    attunementValueFieldset.querySelector('legend').innerText = 'Attunement ';
 
-    const label = attunementLevelFieldset.querySelector('label');
+    const label = attunementValueFieldset.querySelector('label');
     label.for = '';
-    label.innerText = 'Attunement Level';
+    label.innerText = 'Attunement Value';
 
-    attunementLevelFieldset.querySelector('div.form-group.label-top').remove();
-    attunementLevelFieldset.querySelector('div.label-top label').innerText = '';
-    attunementLevelFieldset.querySelector('div.label-top label').dataset.fieldPath = `flags.${moduleID}.attunementLevel`;
+    attunementValueFieldset.querySelector('div.form-group.label-top').remove();
+    attunementValueFieldset.querySelector('div.label-top label').innerText = '';
+    attunementValueFieldset.querySelector('div.label-top label').dataset.fieldPath = `flags.${moduleID}.attunementValue`;
 
-    const input = attunementLevelFieldset.querySelector('input');
+    const input = attunementValueFieldset.querySelector('input');
     input.type = 'number';
-    input.classList.add('attunement-level');
+    input.classList.add('attunement-value');
     delete input.dataset.tidyField;
     input.removeAttribute('id');
 
-    usageFieldset.insertAdjacentHTML("afterend", attunementLevelFieldset.outerHTML);
-    element.querySelector('input.attunement-level').value = attunementLevel;
-    element.querySelector('input.attunement-level').addEventListener('change', function () {
-        item.setFlag(moduleID, 'attunementLevel', this.value)
+    usageFieldset.insertAdjacentHTML("afterend", attunementValueFieldset.outerHTML);
+    element.querySelector('input.attunement-value').value = attunementValue;
+    element.querySelector('input.attunement-value').addEventListener('change', function () {
+        item.setFlag(moduleID, 'attunementValue', this.value)
     });
 });
 
