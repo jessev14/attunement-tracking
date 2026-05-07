@@ -8,6 +8,40 @@ Hooks.once('init', () => {
 });
 
 
+// Every time an actor renders, whether a full render or a partial
+Hooks.on("renderItemSheetV2", (sheet, element, data) => {
+    const item = sheet.object;
+    const attunementLevel = item.getFlag(moduleID, 'attunementLevel')
+    const isTidySheet = element.classList.contains('tidy5e-sheet');
+
+    if (!isTidySheet) {
+        return;
+    }
+
+    const usageFieldset = element.querySelector("input[data-tidy-field='system.uses.spent']").closest('fieldset');
+    const attunementLevelFieldset = usageFieldset.cloneNode(true);
+    attunementLevelFieldset.dataset.tidyRenderScheme = 'handlebars';
+    attunementLevelFieldset.querySelector('legend').innerText = 'Attunement ';
+
+    const label = attunementLevelFieldset.querySelector('label');
+    label.for = '';
+    label.innerText = 'Attunement Level';
+
+    attunementLevelFieldset.querySelector('div.form-group.label-top').remove();
+    attunementLevelFieldset.querySelector('div.label-top label').innerText = '';
+
+    const input = attunementLevelFieldset.querySelector('input');
+    input.type = 'number';
+    input.classList.add('attunement-level');
+
+    lg(attunementLevelFieldset)
+
+    usageFieldset.insertAdjacentHTML("afterend", attunementLevelFieldset.outerHTML);
+    element.querySelector('input.attunement-level').addEventListener('change', function () {
+        item.setFlag(moduleID, 'attunementLevel', this.value)
+    });
+});
+
 Hooks.on('renderItemSheet5e', (app, [html], appData) => {
     const item = app.object;
     let attunementDiv = html.querySelector('select[name="system.attunement"]')?.closest('div.form-group');
@@ -48,8 +82,8 @@ Hooks.on('preUpdateItem', (item, diff, options, userID) => {
                 return false;
             }
         }
-    } 
-    
+    }
+
     if (diff.system.attuned) {
         const itemAttunementValue = item.getFlag(moduleID, 'attunementValue') || 0;
         const newattunementValue = currentActorAttunementValue + itemAttunementValue;
