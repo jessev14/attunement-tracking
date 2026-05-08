@@ -44,10 +44,10 @@ Hooks.on("renderItemSheetV2", (sheet, element, data) => {
     });
 });
 
-Hooks.on('renderItemSheet5e', (app, [html], appData) => {
-    const item = app.object;
-    let attunementDiv = html.querySelector('select[name="system.attunement"]')?.closest('div.form-group');
-    if (!attunementDiv) attunementDiv = html.querySelector('select[data-tidy-field="system.attunement"]').closest('div');
+Hooks.on('renderItemSheet5e', (app, html, appData) => {
+    lg(app);
+    const item = app.item;
+    const attunementDiv = html.querySelector('select[name="system.attunement"]')?.closest('div');
     if (!attunementDiv) return;
 
     const attunementInput = document.createElement('div');
