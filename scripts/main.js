@@ -45,7 +45,6 @@ Hooks.on("renderItemSheetV2", (sheet, element, data) => {
 });
 
 Hooks.on('renderItemSheet5e', (app, html, appData) => {
-    lg(app);
     const item = app.item;
     const attunementDiv = html.querySelector('select[name="system.attunement"]')?.closest('div');
     if (!attunementDiv) return;
@@ -67,7 +66,6 @@ Hooks.on('renderItemSheet5e', (app, html, appData) => {
 });
 
 Hooks.on('preUpdateItem', (item, diff, options, userID) => {
-    lg({ item, diff })
     const { actor } = item;
     if (!actor) return;
 
@@ -105,7 +103,7 @@ function new_prepareCharacterData(wrapped) {
     this.system.attributes.attunement.max = this.system.details.level * 10;
     for (const item of this.items) {
         if (item.system.attuned) {
-            this.system.attributes.attunement.value += item.getFlag(moduleID, 'attunementValue') ?? 0;
+            this.system.attributes.attunement.value += parseFloat(item.getFlag(moduleID, 'attunementValue')) ?? 0;
         }
     }
 }
